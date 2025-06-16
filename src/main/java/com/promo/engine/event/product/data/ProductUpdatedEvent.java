@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +20,5 @@ public class ProductUpdatedEvent {
     private Long categoryId;
     private String categoryName;
     private Boolean isActive;
+    private LocalDateTime updatedAt;
 }

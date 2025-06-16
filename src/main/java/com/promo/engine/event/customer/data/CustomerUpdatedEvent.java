@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -18,4 +19,5 @@ public class CustomerUpdatedEvent {
     private String loyaltyTier;
     private Integer loyaltyPoints;
     private BigDecimal totalSpend;
+    private LocalDateTime updatedAt;
 }

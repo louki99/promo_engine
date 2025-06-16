@@ -53,6 +53,8 @@ management:
         enabled: true
 
 kafka:
-  topics:
-    product-updates: "prod.product.updates.topic"
-    product-deletes: "prod.product.deletes.topic"
+  topic:
+    promo-product: "promo-product-updates"
+    product-deletes: "promo-product-deletes"
+  consumer:
+    group-id: "promo-service"
