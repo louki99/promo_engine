@@ -1,26 +1,15 @@
 package com.promo.engine.service.impl;
 
-import com.promo.engine.domain.CustomerSegment;
 import com.promo.engine.domain.PromoCustomer;
 import com.promo.engine.domain.PromoProduct;
 import com.promo.engine.exception.ResourceNotFoundException;
-import com.promo.engine.repository.CustomerSegmentRepository;
 import com.promo.engine.repository.PromoCustomerRepository;
 import com.promo.engine.repository.PromoProductRepository;
-import com.promo.engine.repository.TimeBasedConditionRepository;
-import com.promo.engine.service.CustomerHistoryService;
 import com.promo.engine.service.DynamicPricingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 import java.math.BigDecimal;
 import java.util.*;

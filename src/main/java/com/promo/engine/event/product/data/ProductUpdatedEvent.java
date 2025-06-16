@@ -1,4 +1,4 @@
-package com.promo.engine.event;
+package com.promo.engine.event.product.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

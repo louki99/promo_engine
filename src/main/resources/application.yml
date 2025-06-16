@@ -50,4 +50,9 @@ management:
   metrics:
     export:
       prometheus:
-        enabled: true 
+        enabled: true
+
+kafka:
+  topics:
+    product-updates: "prod.product.updates.topic"
+    product-deletes: "prod.product.deletes.topic"
