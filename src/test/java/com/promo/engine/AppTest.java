@@ -1,4 +1,4 @@
-package com.foodplus.promo;
+package com.promo.engine;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

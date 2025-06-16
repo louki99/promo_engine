@@ -1,0 +1,15 @@
+package com.promo.engine.enums;
+
+public enum PromotionType {
+    PERCENTAGE_DISCOUNT,
+    FIXED_AMOUNT_DISCOUNT,
+    BUY_X_GET_Y_FREE,
+    BUNDLE_DISCOUNT,
+    LOYALTY_REWARD,
+    FIRST_PURCHASE,
+    SEASONAL,
+    FLASH_SALE,
+    CROSS_CATEGORY,
+    INVENTORY_BASED,
+    LOCATION_BASED
+} 
