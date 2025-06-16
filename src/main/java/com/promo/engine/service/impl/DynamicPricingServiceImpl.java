@@ -11,6 +11,7 @@ import com.promo.engine.repository.TimeBasedConditionRepository;
 import com.promo.engine.service.CustomerHistoryService;
 import com.promo.engine.service.DynamicPricingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,18 +22,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.math.BigDecimal;
 import java.util.*;
 
+import java.math.BigDecimal;
+import java.util.*;
+
 @Service
 @RequiredArgsConstructor
 public class DynamicPricingServiceImpl implements DynamicPricingService {
     private final PromoProductRepository promoProductRepository;
     private final PromoCustomerRepository promoCustomerRepository;
-
-    // Segment/bulk/seasonal/time/demand discounts can remain in-memory or be persisted as needed
-    private final Map<Long, Map<Long, BigDecimal>> segmentDiscounts = new HashMap<>();
-    private final Map<Long, Map<Integer, BigDecimal>> bulkDiscounts = new HashMap<>();
-    private final Map<Long, Double> seasonalMultipliers = new HashMap<>();
-    private final Map<Long, BigDecimal> timeBasedDiscounts = new HashMap<>();
-    private final Map<Long, Double> demandFactors = new HashMap<>();
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public BigDecimal calculateDynamicPrice(Long productId, int quantity, Long customerId) {
@@ -44,9 +42,9 @@ public class DynamicPricingServiceImpl implements DynamicPricingService {
         }
         int inventory = product.getSkuPoints() != null ? product.getSkuPoints().intValue() : 100;
         double inventoryFactor = calculateInventoryFactor(inventory);
-        double demandFactor = demandFactors.getOrDefault(productId, 1.0);
-        double seasonalMultiplier = seasonalMultipliers.getOrDefault(productId, 1.0);
-        BigDecimal timeDiscount = timeBasedDiscounts.getOrDefault(productId, BigDecimal.ZERO);
+        double demandFactor = (Double) redisTemplate.opsForHash().get("demandFactors", productId.toString());
+        double seasonalMultiplier = (Double) redisTemplate.opsForHash().get("seasonalMultipliers", productId.toString());
+        BigDecimal timeDiscount = (BigDecimal) redisTemplate.opsForHash().get("timeBasedDiscounts", productId.toString());
         BigDecimal segmentDiscount = calculateSegmentDiscount(productId, customerId);
         BigDecimal bulkDiscount = calculateBulkDiscount(productId, quantity);
         BigDecimal adjustedPrice = basePrice
@@ -80,7 +78,7 @@ public class DynamicPricingServiceImpl implements DynamicPricingService {
     @Override
     @Transactional
     public void updateDemandFactor(Long productId, double factor) {
-        demandFactors.put(productId, factor);
+        redisTemplate.opsForHash().put("demandFactors", productId.toString(), factor);
     }
 
     @Override
@@ -107,7 +105,7 @@ public class DynamicPricingServiceImpl implements DynamicPricingService {
     public Map<Long, Double> getDemandFactors(List<Long> productIds) {
         Map<Long, Double> factors = new HashMap<>();
         for (Long productId : productIds) {
-            factors.put(productId, demandFactors.getOrDefault(productId, 1.0));
+            factors.put(productId, (Double) redisTemplate.opsForHash().get("demandFactors", productId.toString()));
         }
         return factors;
     }
@@ -115,37 +113,35 @@ public class DynamicPricingServiceImpl implements DynamicPricingService {
     @Override
     @Transactional
     public void applySeasonalMultiplier(Long productId, double multiplier) {
-        seasonalMultipliers.put(productId, multiplier);
+        redisTemplate.opsForHash().put("seasonalMultipliers", productId.toString(), multiplier);
     }
 
     @Override
     @Transactional
     public void applyTimeBasedDiscount(Long productId, BigDecimal discount) {
-        timeBasedDiscounts.put(productId, discount);
+        redisTemplate.opsForHash().put("timeBasedDiscounts", productId.toString(), discount);
     }
 
     @Override
     @Transactional
     public void applyCustomerSegmentDiscount(Long productId, Long segmentId, BigDecimal discount) {
-        segmentDiscounts.computeIfAbsent(productId, k -> new HashMap<>())
-                .put(segmentId, discount);
+        redisTemplate.opsForHash().put("segmentDiscounts:" + productId, segmentId.toString(), discount);
     }
 
     @Override
     @Transactional
     public void applyBulkDiscount(Long productId, int minQuantity, BigDecimal discount) {
-        bulkDiscounts.computeIfAbsent(productId, k -> new HashMap<>())
-                .put(minQuantity, discount);
+        redisTemplate.opsForHash().put("bulkDiscounts:" + productId, minQuantity, discount);
     }
 
     @Override
     @Transactional
     public void resetDynamicPricing(Long productId) {
-        seasonalMultipliers.remove(productId);
-        timeBasedDiscounts.remove(productId);
-        demandFactors.remove(productId);
-        segmentDiscounts.remove(productId);
-        bulkDiscounts.remove(productId);
+        redisTemplate.opsForHash().delete("seasonalMultipliers", productId.toString());
+        redisTemplate.opsForHash().delete("timeBasedDiscounts", productId.toString());
+        redisTemplate.opsForHash().delete("demandFactors", productId.toString());
+        redisTemplate.opsForHash().delete("segmentDiscounts:" + productId);
+        redisTemplate.opsForHash().delete("bulkDiscounts:" + productId);
     }
 
     private double calculateInventoryFactor(int inventory) {
@@ -162,18 +158,18 @@ public class DynamicPricingServiceImpl implements DynamicPricingService {
     private BigDecimal calculateSegmentDiscount(Long productId, Long customerId) {
         PromoCustomer customer = promoCustomerRepository.findById(customerId).orElse(null);
         if (customer == null || customer.getSegmentIds() == null) return BigDecimal.ZERO;
-        Map<Long, BigDecimal> productSegmentDiscounts = segmentDiscounts.getOrDefault(productId, Collections.emptyMap());
+        Map<Object, Object> productSegmentDiscounts = redisTemplate.opsForHash().entries("segmentDiscounts:" + productId);
         return customer.getSegmentIds().stream()
-                .map(segmentId -> productSegmentDiscounts.getOrDefault(segmentId, BigDecimal.ZERO))
+                .map(segmentId -> (BigDecimal) productSegmentDiscounts.getOrDefault(segmentId.toString(), BigDecimal.ZERO))
                 .max(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
     }
 
     private BigDecimal calculateBulkDiscount(Long productId, int quantity) {
-        Map<Integer, BigDecimal> productBulkDiscounts = bulkDiscounts.getOrDefault(productId, Collections.emptyMap());
+        Map<Object, Object> productBulkDiscounts = redisTemplate.opsForHash().entries("bulkDiscounts:" + productId);
         return productBulkDiscounts.entrySet().stream()
-                .filter(entry -> quantity >= entry.getKey())
-                .map(Map.Entry::getValue)
+                .filter(entry -> quantity >= (Integer) entry.getKey())
+                .map(entry -> (BigDecimal) entry.getValue())
                 .max(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
     }
