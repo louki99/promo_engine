@@ -1,6 +1,6 @@
 package com.promo.engine.service;
 
-import com.promo.engine.entity.Reward;
+import com.promo.engine.domain.Reward;
 import com.promo.engine.dto.RewardDTO;
 import java.util.List;
 

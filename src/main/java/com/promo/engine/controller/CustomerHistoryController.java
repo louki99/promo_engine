@@ -1,8 +1,8 @@
 package com.promo.engine.controller;
 
 import com.promo.engine.dto.CustomerHistoryUpdateRequest;
-import com.promo.engine.entity.CustomerHistory;
-import com.promo.engine.entity.CustomerSegment;
+import com.promo.engine.domain.CustomerHistory;
+import com.promo.engine.domain.CustomerSegment;
 import com.promo.engine.service.CustomerHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

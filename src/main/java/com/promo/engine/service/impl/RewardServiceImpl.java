@@ -1,7 +1,7 @@
 package com.promo.engine.service.impl;
 
 import com.promo.engine.dto.RewardDTO;
-import com.promo.engine.entity.Reward;
+import com.promo.engine.domain.Reward;
 import com.promo.engine.exception.ResourceNotFoundException;
 import com.promo.engine.repository.RewardRepository;
 import com.promo.engine.service.RewardService;

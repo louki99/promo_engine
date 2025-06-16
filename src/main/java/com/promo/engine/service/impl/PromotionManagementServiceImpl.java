@@ -1,7 +1,7 @@
 package com.promo.engine.service.impl;
 
 import com.promo.engine.dto.PromotionDTO;
-import com.promo.engine.entity.Promotion;
+import com.promo.engine.domain.Promotion;
 import com.promo.engine.exception.ResourceNotFoundException;
 import com.promo.engine.repository.PromotionRepository;
 import com.promo.engine.service.PromotionManagementService;

@@ -1,4 +1,4 @@
-package com.promo.engine.entity;
+package com.promo.engine.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;

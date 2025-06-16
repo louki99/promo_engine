@@ -1,6 +1,6 @@
 package com.promo.engine.repository;
 
-import com.promo.engine.entity.Family;
+import com.promo.engine.domain.Family;
 import com.promo.engine.enums.FamilyType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

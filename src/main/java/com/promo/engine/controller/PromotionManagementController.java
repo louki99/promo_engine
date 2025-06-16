@@ -1,7 +1,7 @@
 package com.promo.engine.controller;
 
 import com.promo.engine.dto.PromotionDTO;
-import com.promo.engine.entity.Promotion;
+import com.promo.engine.domain.Promotion;
 import com.promo.engine.service.PromotionManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

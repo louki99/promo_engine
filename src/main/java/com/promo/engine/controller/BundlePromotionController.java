@@ -1,7 +1,7 @@
 package com.promo.engine.controller;
 
 import com.promo.engine.dto.BundlePromotionDTO;
-import com.promo.engine.entity.BundlePromotion;
+import com.promo.engine.domain.BundlePromotion;
 import com.promo.engine.service.BundlePromotionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

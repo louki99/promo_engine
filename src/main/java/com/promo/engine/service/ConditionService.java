@@ -1,6 +1,6 @@
 package com.promo.engine.service;
 
-import com.promo.engine.entity.Condition;
+import com.promo.engine.domain.Condition;
 import com.promo.engine.dto.ConditionDTO;
 import java.util.List;
 

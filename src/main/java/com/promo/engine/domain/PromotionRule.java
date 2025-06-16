@@ -1,4 +1,4 @@
-package com.promo.engine.entity;
+package com.promo.engine.domain;
 
 import com.promo.engine.enums.BreakpointType;
 import com.promo.engine.enums.CalculationMethod;

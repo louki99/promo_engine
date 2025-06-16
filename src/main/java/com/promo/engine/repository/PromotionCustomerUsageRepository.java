@@ -1,6 +1,6 @@
 package com.promo.engine.repository;
 
-import com.promo.engine.entity.PromotionCustomerUsage;
+import com.promo.engine.domain.PromotionCustomerUsage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

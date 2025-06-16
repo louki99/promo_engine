@@ -1,7 +1,7 @@
 package com.promo.engine.controller;
 
 import com.promo.engine.dto.RewardDTO;
-import com.promo.engine.entity.Reward;
+import com.promo.engine.domain.Reward;
 import com.promo.engine.service.RewardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

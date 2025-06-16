@@ -1,11 +1,12 @@
 package com.promo.engine.service.impl;
 
+import com.promo.engine.domain.PromoProduct;
 import com.promo.engine.dto.*;
-import com.promo.engine.entity.PromotionRule;
-import com.promo.engine.entity.Tier;
-import com.promo.engine.entity.Reward;
+import com.promo.engine.domain.PromotionRule;
+import com.promo.engine.domain.Tier;
+import com.promo.engine.domain.Reward;
 import com.promo.engine.enums.CalculationMethod;
-import com.promo.engine.enums.RewardType;
+import com.promo.engine.repository.PromoProductRepository;
 import com.promo.engine.service.RewardApplicatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RewardApplicatorServiceImpl implements RewardApplicatorService {
-    
+
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
     private static final int SCALE = 2;
     private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
+
+    private final PromoProductRepository promoProductRepository;
 
     @Override
     public BigDecimal applyRuleRewards(PromotionRule rule, ApplyPromotionRequest request, ApplyPromotionResponse response) {
@@ -52,18 +55,13 @@ public class RewardApplicatorServiceImpl implements RewardApplicatorService {
     }
 
     private BigDecimal calculateBreakpointValue(PromotionRule rule, ApplyPromotionRequest request) {
-        switch (rule.getBreakpointType()) {
-            case AMOUNT:
-                return calculateCartTotal(request.getCartItems());
-            case QUANTITY:
-                return calculateTotalQuantity(request.getCartItems());
-            case SKU_POINTS:
-                return calculateSkuPoints(request.getCartItems());
-            case PROMOTION_TOTAL_USAGE:
-                return BigDecimal.valueOf(request.getLoyaltyPoints());
-            default:
-                return BigDecimal.ZERO;
-        }
+        return switch (rule.getBreakpointType()) {
+            case AMOUNT -> calculateCartTotal(request.getCartItems());
+            case QUANTITY -> calculateTotalQuantity(request.getCartItems());
+            case SKU_POINTS -> calculateSkuPoints(request.getCartItems());
+            case PROMOTION_TOTAL_USAGE -> BigDecimal.valueOf(request.getLoyaltyPoints());
+            default -> BigDecimal.ZERO;
+        };
     }
 
     private BigDecimal calculateCartTotal(List<CartItem> cartItems) {
@@ -118,55 +116,55 @@ public class RewardApplicatorServiceImpl implements RewardApplicatorService {
         return discount;
     }
 
-    private BigDecimal applyCumulativeReward(List<Tier> tiers, BigDecimal breakpointValue, 
-            ApplyPromotionRequest request, ApplyPromotionResponse response) {
+    private BigDecimal applyCumulativeReward(List<Tier> tiers, BigDecimal breakpointValue,
+                                             ApplyPromotionRequest request, ApplyPromotionResponse response) {
         BigDecimal totalDiscount = BigDecimal.ZERO;
-        
+
         for (Tier tier : tiers) {
             if (breakpointValue.compareTo(tier.getMinimumThreshold()) >= 0) {
                 totalDiscount = totalDiscount.add(applyBracketReward(tier, request, response));
             }
         }
-        
+
         return totalDiscount;
     }
 
-    private BigDecimal applyPercentDiscountOnItem(Reward reward, ApplyPromotionRequest request, 
-            ApplyPromotionResponse response) {
+    private BigDecimal applyPercentDiscountOnItem(Reward reward, ApplyPromotionRequest request,
+                                                  ApplyPromotionResponse response) {
         BigDecimal discount = BigDecimal.ZERO;
-        
+
         for (CartItem cartItem : request.getCartItems()) {
             if (isTargetEntity(cartItem, reward)) {
                 BigDecimal itemTotal = cartItem.getUnitPrice()
                         .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
                 BigDecimal itemDiscount = itemTotal.multiply(reward.getValue())
                         .divide(HUNDRED, SCALE, ROUNDING_MODE);
-                
+
                 discount = discount.add(itemDiscount);
                 updateLineItemDiscount(response, cartItem, itemDiscount);
             }
         }
-        
+
         return discount;
     }
 
 
-    private BigDecimal applyPercentDiscountOnCart(Reward reward, ApplyPromotionRequest request, 
-            ApplyPromotionResponse response) {
+    private BigDecimal applyPercentDiscountOnCart(Reward reward, ApplyPromotionRequest request,
+                                                  ApplyPromotionResponse response) {
         BigDecimal cartTotal = calculateCartTotal(request.getCartItems());
         BigDecimal discount = cartTotal.multiply(reward.getValue())
                 .divide(HUNDRED, SCALE, ROUNDING_MODE);
-        
+
         // Distribute discount proportionally across all items
         distributeDiscountProportionally(response, discount, request.getCartItems());
-        
+
         return discount;
     }
 
-    private BigDecimal applyFixedDiscountOnItem(Reward reward, ApplyPromotionRequest request, 
-            ApplyPromotionResponse response) {
+    private BigDecimal applyFixedDiscountOnItem(Reward reward, ApplyPromotionRequest request,
+                                                ApplyPromotionResponse response) {
         BigDecimal discount = BigDecimal.ZERO;
-        
+
         for (CartItem cartItem : request.getCartItems()) {
             if (isTargetEntity(cartItem, reward)) {
                 BigDecimal itemDiscount = reward.getValue()
@@ -175,19 +173,19 @@ public class RewardApplicatorServiceImpl implements RewardApplicatorService {
                 updateLineItemDiscount(response, cartItem, itemDiscount);
             }
         }
-        
+
         return discount;
     }
 
-    private BigDecimal applyFixedDiscountOnCart(Reward reward, ApplyPromotionRequest request, 
-            ApplyPromotionResponse response) {
+    private BigDecimal applyFixedDiscountOnCart(Reward reward, ApplyPromotionRequest request,
+                                                ApplyPromotionResponse response) {
         BigDecimal discount = reward.getValue();
         distributeDiscountProportionally(response, discount, request.getCartItems());
         return discount;
     }
 
-    private void applyFreeProduct(Reward reward, ApplyPromotionRequest request, 
-            ApplyPromotionResponse response) {
+    private void applyFreeProduct(Reward reward, ApplyPromotionRequest request,
+                                  ApplyPromotionResponse response) {
         FreeItem freeItem = new FreeItem();
         freeItem.setProductId(reward.getTargetEntityId());
         freeItem.setQuantity(1); // Default to 1 free item
@@ -195,7 +193,7 @@ public class RewardApplicatorServiceImpl implements RewardApplicatorService {
     }
 
     private void applyFreeShipping(Reward reward, ApplyPromotionResponse response) {
-        response.setShippingDiscount(response.getShippingDiscount() != null ? 
+        response.setShippingDiscount(response.getShippingDiscount() != null ?
                 response.getShippingDiscount() : BigDecimal.ZERO);
     }
 
@@ -203,14 +201,14 @@ public class RewardApplicatorServiceImpl implements RewardApplicatorService {
         if (reward.getTargetEntityType().equals("PRODUCT")) {
             return item.getProductId().equals(reward.getTargetEntityId());
         } else if (reward.getTargetEntityType().equals("PRODUCT_FAMILY")) {
-            return item.getFamilyId() != null && 
-                    item.getFamilyId().equals(String.valueOf(reward.getTargetEntityId()));
+            PromoProduct product = promoProductRepository.findById(item.getProductId()).orElse(null);
+            return product != null && product.getFamilyId() != null && product.getFamilyId().equals(reward.getTargetEntityId());
         }
         return false;
     }
 
-    private void updateLineItemDiscount(ApplyPromotionResponse response, CartItem cartItem, 
-            BigDecimal discount) {
+    private void updateLineItemDiscount(ApplyPromotionResponse response, CartItem cartItem,
+                                        BigDecimal discount) {
         response.getLineItems().stream()
                 .filter(item -> item.getProductId().equals(cartItem.getProductId()))
                 .findFirst()
@@ -220,16 +218,16 @@ public class RewardApplicatorServiceImpl implements RewardApplicatorService {
                 });
     }
 
-    private void distributeDiscountProportionally(ApplyPromotionResponse response, 
-            BigDecimal totalDiscount, List<CartItem> cartItems) {
+    private void distributeDiscountProportionally(ApplyPromotionResponse response,
+                                                  BigDecimal totalDiscount, List<CartItem> cartItems) {
         BigDecimal cartTotal = calculateCartTotal(cartItems);
-        
+
         for (CartItem cartItem : cartItems) {
             BigDecimal itemTotal = cartItem.getUnitPrice()
                     .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             BigDecimal proportion = itemTotal.divide(cartTotal, SCALE, ROUNDING_MODE);
             BigDecimal itemDiscount = totalDiscount.multiply(proportion);
-            
+
             updateLineItemDiscount(response, cartItem, itemDiscount);
         }
     }

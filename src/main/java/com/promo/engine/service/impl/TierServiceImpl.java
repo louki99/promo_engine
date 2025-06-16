@@ -1,9 +1,9 @@
 package com.promo.engine.service.impl;
 
 import com.promo.engine.dto.TierDTO;
-import com.promo.engine.entity.PromotionRule;
-import com.promo.engine.entity.Reward;
-import com.promo.engine.entity.Tier;
+import com.promo.engine.domain.PromotionRule;
+import com.promo.engine.domain.Reward;
+import com.promo.engine.domain.Tier;
 import com.promo.engine.exception.ResourceNotFoundException;
 import com.promo.engine.repository.PromotionRuleRepository;
 import com.promo.engine.repository.RewardRepository;

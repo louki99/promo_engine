@@ -1,8 +1,8 @@
 package com.promo.engine.service.impl;
 
 import com.promo.engine.dto.ConditionDTO;
-import com.promo.engine.entity.Condition;
-import com.promo.engine.entity.PromotionRule;
+import com.promo.engine.domain.Condition;
+import com.promo.engine.domain.PromotionRule;
 import com.promo.engine.exception.ResourceNotFoundException;
 import com.promo.engine.repository.ConditionRepository;
 import com.promo.engine.repository.PromotionRuleRepository;

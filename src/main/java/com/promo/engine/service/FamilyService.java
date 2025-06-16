@@ -1,7 +1,7 @@
 package com.promo.engine.service;
 
 import com.promo.engine.dto.FamilyDTO;
-import com.promo.engine.entity.Family;
+import com.promo.engine.domain.Family;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package com.promo.engine.service.impl;
 
 import com.promo.engine.dto.BundlePromotionDTO;
-import com.promo.engine.entity.BundlePromotion;
-import com.promo.engine.entity.Promotion;
+import com.promo.engine.domain.BundlePromotion;
+import com.promo.engine.domain.Promotion;
 import com.promo.engine.exception.ResourceNotFoundException;
 import com.promo.engine.repository.BundlePromotionRepository;
 import com.promo.engine.repository.PromotionRepository;

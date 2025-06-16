@@ -1,12 +1,15 @@
 package com.promo.engine.service.impl;
 
+import com.promo.engine.domain.PromoCustomer;
+import com.promo.engine.domain.PromoProduct;
 import com.promo.engine.dto.ApplyPromotionRequest;
 import com.promo.engine.dto.CartItem;
-import com.promo.engine.entity.Condition;
-import com.promo.engine.entity.PromotionRule;
+import com.promo.engine.domain.Condition;
+import com.promo.engine.domain.PromotionRule;
 import com.promo.engine.enums.ConditionLogic;
-import com.promo.engine.enums.ConditionType;
 import com.promo.engine.enums.OperatorType;
+import com.promo.engine.repository.PromoCustomerRepository;
+import com.promo.engine.repository.PromoProductRepository;
 import com.promo.engine.repository.PromotionCustomerUsageRepository;
 import com.promo.engine.service.ConditionEvaluatorService;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +17,15 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ConditionEvaluatorServiceImpl implements ConditionEvaluatorService {
 
     private final PromotionCustomerUsageRepository usageRepository;
+    private final PromoProductRepository promoProductRepository;
+    private final PromoCustomerRepository promoCustomerRepository;
+
 
     @Override
     public boolean evaluateRule(PromotionRule rule, ApplyPromotionRequest request) {
@@ -68,9 +72,12 @@ public class ConditionEvaluatorServiceImpl implements ConditionEvaluatorService 
             return cartItems.stream()
                     .anyMatch(item -> item.getProductId().equals(condition.getEntityId()));
         } else if (condition.getEntityType().equals("PRODUCT_FAMILY")) {
+            // Use local product data for family check
             return cartItems.stream()
-                    .anyMatch(item -> item.getFamilyId() != null && 
-                            item.getFamilyId().equals(String.valueOf(condition.getEntityId())));
+                    .anyMatch(item -> {
+                        PromoProduct product = promoProductRepository.findById(item.getProductId()).orElse(null);
+                        return product != null && product.getFamilyId() != null && product.getFamilyId().equals(condition.getEntityId());
+                    });
         }
         return false;
     }
@@ -84,9 +91,11 @@ public class ConditionEvaluatorServiceImpl implements ConditionEvaluatorService 
     }
 
     private boolean evaluateCustomerInGroup(Condition condition, Long customerId) {
-        // This would typically involve checking if the customer is in a specific group
-        // For now, we'll return false as this would require additional customer group management
-        return false;
+        // Use local customer data for group check
+        PromoCustomer customer = promoCustomerRepository.findById(customerId).orElse(null);
+        if (customer == null) return false;
+        // entityId here is the family/group id
+        return customer.getFamilyIds().contains(condition.getEntityId());
     }
 
     private boolean evaluateProductQuantity(Condition condition, List<CartItem> cartItems) {
@@ -95,8 +104,19 @@ public class ConditionEvaluatorServiceImpl implements ConditionEvaluatorService 
                     .filter(item -> item.getProductId().equals(condition.getEntityId()))
                     .mapToInt(CartItem::getQuantity)
                     .sum();
-            
-            return compareValues(BigDecimal.valueOf(totalQuantity), 
+
+            return compareValues(BigDecimal.valueOf(totalQuantity),
+                    new BigDecimal(condition.getValue()), condition.getOperator());
+        } else if (condition.getEntityType().equals("PRODUCT_FAMILY")) {
+            // Use local product data for family check
+            int totalQuantity = cartItems.stream()
+                    .filter(item -> {
+                        PromoProduct product = promoProductRepository.findById(item.getProductId()).orElse(null);
+                        return product != null && product.getFamilyId() != null && product.getFamilyId().equals(condition.getEntityId());
+                    })
+                    .mapToInt(CartItem::getQuantity)
+                    .sum();
+            return compareValues(BigDecimal.valueOf(totalQuantity),
                     new BigDecimal(condition.getValue()), condition.getOperator());
         }
         return false;

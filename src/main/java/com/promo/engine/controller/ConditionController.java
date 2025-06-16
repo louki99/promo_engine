@@ -1,7 +1,7 @@
 package com.promo.engine.controller;
 
 import com.promo.engine.dto.ConditionDTO;
-import com.promo.engine.entity.Condition;
+import com.promo.engine.domain.Condition;
 import com.promo.engine.service.ConditionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

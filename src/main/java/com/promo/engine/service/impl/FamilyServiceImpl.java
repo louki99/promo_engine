@@ -1,8 +1,8 @@
 package com.promo.engine.service.impl;
 
 import com.promo.engine.dto.FamilyDTO;
-import com.promo.engine.entity.Family;
-import com.promo.engine.entity.FamilyMember;
+import com.promo.engine.domain.Family;
+import com.promo.engine.domain.FamilyMember;
 import com.promo.engine.enums.FamilyType;
 import com.promo.engine.exception.ResourceNotFoundException;
 import com.promo.engine.repository.FamilyMemberRepository;

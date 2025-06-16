@@ -1,7 +1,7 @@
 package com.promo.engine.controller;
 
-import com.promo.engine.entity.FlashSale;
-import com.promo.engine.entity.FlashSaleInventory;
+import com.promo.engine.domain.FlashSale;
+import com.promo.engine.domain.FlashSaleInventory;
 import com.promo.engine.service.FlashSaleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,7 @@
 package com.promo.engine.service;
 
 import com.promo.engine.dto.*;
-import com.promo.engine.entity.PromotionRule;
+import com.promo.engine.domain.PromotionRule;
 import java.math.BigDecimal;
 
 public interface RewardApplicatorService {

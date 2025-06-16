@@ -1,7 +1,7 @@
 package com.promo.engine.service;
 
-import com.promo.engine.entity.FlashSale;
-import com.promo.engine.entity.FlashSaleInventory;
+import com.promo.engine.domain.FlashSale;
+import com.promo.engine.domain.FlashSaleInventory;
 
 import java.math.BigDecimal;
 import java.util.List;

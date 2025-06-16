@@ -1,6 +1,6 @@
 package com.promo.engine.dto;
 
-import com.promo.engine.entity.CustomerHistory;
+import com.promo.engine.domain.CustomerHistory;
 import lombok.Data;
 
 import java.math.BigDecimal;

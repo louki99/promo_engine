@@ -1,6 +1,6 @@
 package com.promo.engine.repository;
 
-import com.promo.engine.entity.PromotionRule;
+import com.promo.engine.domain.PromotionRule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

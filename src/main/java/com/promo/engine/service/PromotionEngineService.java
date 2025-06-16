@@ -1,9 +1,9 @@
 package com.promo.engine.service;
 
 import com.promo.engine.dto.*;
-import com.promo.engine.entity.Promotion;
-import com.promo.engine.entity.PromotionCustomerUsage;
-import com.promo.engine.entity.PromotionRule;
+import com.promo.engine.domain.Promotion;
+import com.promo.engine.domain.PromotionCustomerUsage;
+import com.promo.engine.domain.PromotionRule;
 import com.promo.engine.repository.PromotionCustomerUsageRepository;
 import com.promo.engine.repository.PromotionRepository;
 import lombok.RequiredArgsConstructor;

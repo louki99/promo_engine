@@ -3,7 +3,7 @@ package com.promo.engine.service;
 import com.promo.engine.dto.ConditionDTO;
 import com.promo.engine.dto.RuleDTO;
 import com.promo.engine.dto.TierDTO;
-import com.promo.engine.entity.PromotionRule;
+import com.promo.engine.domain.PromotionRule;
 
 import java.util.List;
 

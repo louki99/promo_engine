@@ -1,6 +1,6 @@
 package com.promo.engine.repository;
 
-import com.promo.engine.entity.CustomerHistory;
+import com.promo.engine.domain.CustomerHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

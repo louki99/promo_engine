@@ -2,7 +2,7 @@ package com.promo.engine.controller;
 
 import com.promo.engine.dto.ApplyPromotionRequest;
 import com.promo.engine.dto.ApplyPromotionResponse;
-import com.promo.engine.entity.PromotionRule;
+import com.promo.engine.domain.PromotionRule;
 import com.promo.engine.service.RewardApplicatorService;
 import com.promo.engine.service.RuleService;
 import lombok.RequiredArgsConstructor;

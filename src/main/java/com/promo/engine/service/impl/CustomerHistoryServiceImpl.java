@@ -1,8 +1,8 @@
 package com.promo.engine.service.impl;
 
-import com.promo.engine.entity.CustomerHistory;
-import com.promo.engine.entity.CustomerSegment;
-import com.promo.engine.entity.Promotion;
+import com.promo.engine.domain.CustomerHistory;
+import com.promo.engine.domain.CustomerSegment;
+import com.promo.engine.domain.Promotion;
 import com.promo.engine.exception.ResourceNotFoundException;
 import com.promo.engine.repository.CustomerHistoryRepository;
 import com.promo.engine.repository.CustomerSegmentRepository;

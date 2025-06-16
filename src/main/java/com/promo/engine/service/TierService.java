@@ -1,6 +1,6 @@
 package com.promo.engine.service;
 
-import com.promo.engine.entity.Tier;
+import com.promo.engine.domain.Tier;
 import com.promo.engine.dto.TierDTO;
 import java.util.List;
 

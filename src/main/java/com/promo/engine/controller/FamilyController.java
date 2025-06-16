@@ -1,7 +1,7 @@
 package com.promo.engine.controller;
 
 import com.promo.engine.dto.FamilyDTO;
-import com.promo.engine.entity.Family;
+import com.promo.engine.domain.Family;
 import com.promo.engine.service.FamilyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

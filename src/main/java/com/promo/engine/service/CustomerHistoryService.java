@@ -1,7 +1,7 @@
 package com.promo.engine.service;
 
-import com.promo.engine.entity.CustomerHistory;
-import com.promo.engine.entity.CustomerSegment;
+import com.promo.engine.domain.CustomerHistory;
+import com.promo.engine.domain.CustomerSegment;
 
 import java.math.BigDecimal;
 import java.util.List;
