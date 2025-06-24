@@ -3,28 +3,19 @@ package com.promo.engine.service;
 import com.promo.engine.dto.ConditionDTO;
 import com.promo.engine.dto.RuleDTO;
 import com.promo.engine.dto.TierDTO;
-import com.promo.engine.domain.PromotionRule;
-
+import com.promo.engine.domain.RuleEntity;
 import java.util.List;
 
 public interface RuleService {
-    PromotionRule createRule(RuleDTO ruleDTO);
-    
-    List<PromotionRule> getAllRules();
-    
-    PromotionRule getRuleById(Long id);
-    
-    List<PromotionRule> getRulesByPromotionId(Long promotionId);
-    
-    PromotionRule updateRule(Long id, RuleDTO ruleDTO);
-    
+    RuleEntity createRule(RuleDTO ruleDTO);
+    List<RuleEntity> getAllRules();
+    RuleEntity getRuleById(Long id);
+    List<RuleEntity> getRulesByPromotionId(Long promotionId);
+    RuleEntity updateRule(Long id, RuleDTO ruleDTO);
     void deleteRule(Long id);
-    
-    PromotionRule addCondition(Long ruleId, ConditionDTO conditionDTO);
-    
-    PromotionRule removeCondition(Long ruleId, Long conditionId);
-    
-    PromotionRule addTier(Long ruleId, TierDTO tierDTO);
-    
-    PromotionRule removeTier(Long ruleId, Long tierId);
+
+    RuleEntity addCondition(Long ruleId, ConditionDTO conditionDTO);
+    RuleEntity removeCondition(Long ruleId, Long conditionId);
+    RuleEntity addTier(Long ruleId, TierDTO tierDTO);
+    RuleEntity removeTier(Long ruleId, Long tierId);
 } 

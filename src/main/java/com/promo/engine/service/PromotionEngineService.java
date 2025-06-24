@@ -1,8 +1,9 @@
 package com.promo.engine.service;
 
 import com.promo.engine.dto.*;
-import com.promo.engine.domain.Promotion;
+import com.promo.engine.domain.PromotionEntity;
 import com.promo.engine.domain.PromotionCustomerUsage;
+import com.promo.engine.domain.RuleEntity;
 import com.promo.engine.domain.PromotionRule;
 import com.promo.engine.repository.PromotionCustomerUsageRepository;
 import com.promo.engine.repository.PromotionRepository;
@@ -41,7 +42,7 @@ public class PromotionEngineService {
         response.setOriginalTotal(originalTotal);
         
         // Get active promotions
-        List<Promotion> activePromotions = promotionRepository.findActivePromotions(LocalDateTime.now());
+        List<PromotionEntity> activePromotions = promotionRepository.findActivePromotions(LocalDateTime.now());
         
         // Sort by priority (highest first)
         activePromotions.sort((p1, p2) -> Integer.compare(p2.getPriority(), p1.getPriority()));
@@ -49,13 +50,13 @@ public class PromotionEngineService {
         BigDecimal totalDiscount = BigDecimal.ZERO;
         
         // Separate exclusive and stackable promotions
-        List<Promotion> exclusivePromos = activePromotions.stream()
-            .filter(Promotion::isExclusive)
+        List<PromotionEntity> exclusivePromos = activePromotions.stream()
+            .filter(PromotionEntity::isExclusive)
             .collect(Collectors.toList());
             
         if (!exclusivePromos.isEmpty()) {
             // Apply only the highest priority exclusive promotion
-            Promotion best = exclusivePromos.get(0); // already sorted
+            PromotionEntity best = exclusivePromos.get(0); // already sorted
             if (isPromotionApplicable(best, request)) {
                 ApplyPromotionResult result = applyPromotion(best, request, response);
                 if (result.isApplied()) {
@@ -69,20 +70,20 @@ public class PromotionEngineService {
             }
         } else {
             // Stackable logic: group by stackingGroup, apply with limits
-            Map<String, List<Promotion>> byGroup = activePromotions.stream()
+            Map<String, List<PromotionEntity>> byGroup = activePromotions.stream()
                 .filter(p -> !p.isExclusive())
-                .collect(Collectors.groupingBy(Promotion::getStackingGroup, Collectors.toList()));
+                .collect(Collectors.groupingBy(PromotionEntity::getStackingGroup, Collectors.toList()));
                 
             // Track usage for limits
             Map<String, Integer> groupUsageCount = new HashMap<>();
             Map<Long, Integer> customerPromoUsage = new HashMap<>();
             int orderPromoCount = 0;
             
-            for (List<Promotion> groupPromos : byGroup.values()) {
+            for (List<PromotionEntity> groupPromos : byGroup.values()) {
                 String group = groupPromos.get(0).getStackingGroup();
                 int groupCount = 0;
                 
-                for (Promotion promo : groupPromos) {
+                for (PromotionEntity promo : groupPromos) {
                     // Check stacking limits
                     if (promo.getMaxStackCount() != null && groupCount >= promo.getMaxStackCount()) {
                         continue;
@@ -128,7 +129,7 @@ public class PromotionEngineService {
     }
     
     public List<PromotionDTO> getEligiblePromotions(ApplyPromotionRequest request) {
-        List<Promotion> activePromotions = promotionRepository.findActivePromotions(LocalDateTime.now());
+        List<PromotionEntity> activePromotions = promotionRepository.findActivePromotions(LocalDateTime.now());
         
         return activePromotions.stream()
                 .filter(promotion -> isPromotionApplicable(promotion, request))
@@ -137,13 +138,13 @@ public class PromotionEngineService {
     }
     
     public boolean validatePromotionCode(String promoCode, ApplyPromotionRequest request) {
-        Optional<Promotion> promotionOpt = promotionRepository.findByPromoCodeAndIsActiveTrue(promoCode);
+        Optional<PromotionEntity> promotionOpt = promotionRepository.findByPromoCodeAndActiveIsTrue(promoCode);
         
         if (promotionOpt.isEmpty()) {
             return false;
         }
         
-        Promotion promotion = promotionOpt.get();
+        PromotionEntity promotion = promotionOpt.get();
         LocalDateTime now = LocalDateTime.now();
         
         // Check date validity
@@ -154,23 +155,30 @@ public class PromotionEngineService {
         return isPromotionApplicable(promotion, request);
     }
     
-    private boolean isPromotionApplicable(Promotion promotion, ApplyPromotionRequest request) {
+    private boolean isPromotionApplicable(PromotionEntity promotion, ApplyPromotionRequest request) {
         if (promotion.getRules() == null || promotion.getRules().isEmpty()) {
             return false;
         }
         
         // At least one rule must be satisfied
         return promotion.getRules().stream()
+                .filter(rule -> rule instanceof RuleEntity)
+                .map(rule -> (RuleEntity) rule)
                 .anyMatch(rule -> conditionEvaluator.evaluateRule(rule, request));
     }
     
-    private ApplyPromotionResult applyPromotion(Promotion promotion, ApplyPromotionRequest request, ApplyPromotionResponse response) {
+    private ApplyPromotionResult applyPromotion(PromotionEntity promotion, ApplyPromotionRequest request, ApplyPromotionResponse response) {
         ApplyPromotionResult result = new ApplyPromotionResult();
         BigDecimal totalDiscount = BigDecimal.ZERO;
         
         for (PromotionRule rule : promotion.getRules()) {
-            if (conditionEvaluator.evaluateRule(rule, request)) {
-                BigDecimal ruleDiscount = rewardApplicator.applyRuleRewards(rule, request, response);
+            if (!(rule instanceof RuleEntity)) {
+                log.warn("Skipping non-RuleEntity rule: {}", rule.getClass());
+                continue;
+            }
+            RuleEntity ruleEntity = (RuleEntity) rule;
+            if (conditionEvaluator.evaluateRule(ruleEntity, request)) {
+                BigDecimal ruleDiscount = rewardApplicator.applyRuleRewards(ruleEntity, request, response);
                 totalDiscount = totalDiscount.add(ruleDiscount);
             }
         }
@@ -181,7 +189,7 @@ public class PromotionEngineService {
         return result;
     }
     
-    private void recordPromotionUsage(Promotion promotion, Long customerId) {
+    private void recordPromotionUsage(PromotionEntity promotion, Long customerId) {
         PromotionCustomerUsage usage = new PromotionCustomerUsage();
         usage.setPromotion(promotion);
         usage.setCustomerId(customerId);
@@ -210,7 +218,7 @@ public class PromotionEngineService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
-    private PromotionDTO convertToPromotionDTO(Promotion promotion) {
+    private PromotionDTO convertToPromotionDTO(PromotionEntity promotion) {
         PromotionDTO dto = new PromotionDTO();
         dto.setPromoCode(promotion.getPromoCode());
         dto.setName(promotion.getName());

@@ -1,12 +1,13 @@
 package com.promo.engine.controller;
 
 import com.promo.engine.dto.PromotionDTO;
-import com.promo.engine.domain.Promotion;
-import com.promo.engine.service.PromotionManagementService;
+import com.promo.engine.domain.PromotionEntity;
+import com.promo.engine.service.impl.PromotionManagementServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -14,43 +15,43 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PromotionManagementController {
     
-    private final PromotionManagementService promotionManagementService;
+    private final PromotionManagementServiceImpl promotionManagementService;
     
     @PostMapping
-    public ResponseEntity<Promotion> createPromotion(@RequestBody PromotionDTO promotionDTO) {
+    public ResponseEntity<PromotionEntity> createPromotion(@Valid @RequestBody PromotionDTO promotionDTO) {
         return ResponseEntity.ok(promotionManagementService.createPromotion(promotionDTO));
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Promotion> getPromotionById(@PathVariable Long id) {
+    public ResponseEntity<PromotionEntity> getPromotionById(@PathVariable Long id) {
         return ResponseEntity.ok(promotionManagementService.getPromotionById(id));
     }
     
     @GetMapping
-    public ResponseEntity<List<Promotion>> getAllPromotions() {
+    public ResponseEntity<List<PromotionEntity>> getAllPromotions() {
         return ResponseEntity.ok(promotionManagementService.getAllPromotions());
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Promotion> updatePromotion(
+    public ResponseEntity<PromotionEntity> updatePromotion(
             @PathVariable Long id,
-            @RequestBody PromotionDTO promotionDTO) {
+            @Valid @RequestBody PromotionDTO promotionDTO) {
         return ResponseEntity.ok(promotionManagementService.updatePromotion(id, promotionDTO));
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePromotion(@PathVariable Long id) {
         promotionManagementService.deletePromotion(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
     
-    @PostMapping("/{id}/activate")
-    public ResponseEntity<Promotion> activatePromotion(@PathVariable Long id) {
+    @PutMapping("/{id}/activate")
+    public ResponseEntity<PromotionEntity> activatePromotion(@PathVariable Long id) {
         return ResponseEntity.ok(promotionManagementService.activatePromotion(id));
     }
     
-    @PostMapping("/{id}/deactivate")
-    public ResponseEntity<Promotion> deactivatePromotion(@PathVariable Long id) {
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<PromotionEntity> deactivatePromotion(@PathVariable Long id) {
         return ResponseEntity.ok(promotionManagementService.deactivatePromotion(id));
     }
 } 

@@ -4,10 +4,11 @@ import com.promo.engine.dto.ConditionDTO;
 import com.promo.engine.dto.RuleDTO;
 import com.promo.engine.dto.TierDTO;
 import com.promo.engine.domain.Condition;
-import com.promo.engine.domain.Promotion;
-import com.promo.engine.domain.PromotionRule;
+import com.promo.engine.domain.PromotionEntity;
+import com.promo.engine.domain.RuleEntity;
 import com.promo.engine.domain.Reward;
 import com.promo.engine.domain.Tier;
+import com.promo.engine.domain.PromotionRule;
 import com.promo.engine.exception.ResourceNotFoundException;
 import com.promo.engine.repository.ConditionRepository;
 import com.promo.engine.repository.PromotionRepository;
@@ -33,51 +34,47 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     @Transactional
-    public PromotionRule createRule(RuleDTO ruleDTO) {
-        Promotion promotion = promotionRepository.findById(ruleDTO.getPromotionId())
+    public RuleEntity createRule(RuleDTO ruleDTO) {
+        PromotionEntity promotion = promotionRepository.findById(ruleDTO.getPromotionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
 
-        PromotionRule rule = new PromotionRule();
+        RuleEntity rule = new RuleEntity();
         rule.setPromotion(promotion);
-        rule.setName(ruleDTO.getName());
-        rule.setConditionLogic(ruleDTO.getConditionLogic());
-        rule.setCalculationMethod(ruleDTO.getCalculationMethod());
-        rule.setBreakpointType(ruleDTO.getBreakpointType());
+        rule.setType(ruleDTO.getType());
+        rule.setParameters(ruleDTO.getParameters());
 
         return ruleRepository.save(rule);
     }
 
     @Override
-    public List<PromotionRule> getAllRules() {
+    public List<RuleEntity> getAllRules() {
         return ruleRepository.findAll();
     }
 
     @Override
-    public PromotionRule getRuleById(Long id) {
+    public RuleEntity getRuleById(Long id) {
         return ruleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rule not found"));
     }
 
     @Override
-    public List<PromotionRule> getRulesByPromotionId(Long promotionId) {
+    public List<RuleEntity> getRulesByPromotionId(Long promotionId) {
         return ruleRepository.findByPromotionId(promotionId);
     }
 
     @Override
     @Transactional
-    public PromotionRule updateRule(Long id, RuleDTO ruleDTO) {
-        PromotionRule rule = getRuleById(id);
+    public RuleEntity updateRule(Long id, RuleDTO ruleDTO) {
+        RuleEntity rule = getRuleById(id);
         
         if (ruleDTO.getPromotionId() != null && !ruleDTO.getPromotionId().equals(rule.getPromotion().getId())) {
-            Promotion promotion = promotionRepository.findById(ruleDTO.getPromotionId())
+            PromotionEntity promotion = promotionRepository.findById(ruleDTO.getPromotionId())
                     .orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
             rule.setPromotion(promotion);
         }
         
-        rule.setName(ruleDTO.getName());
-        rule.setConditionLogic(ruleDTO.getConditionLogic());
-        rule.setCalculationMethod(ruleDTO.getCalculationMethod());
-        rule.setBreakpointType(ruleDTO.getBreakpointType());
+        rule.setType(ruleDTO.getType());
+        rule.setParameters(ruleDTO.getParameters());
 
         return ruleRepository.save(rule);
     }
@@ -85,17 +82,17 @@ public class RuleServiceImpl implements RuleService {
     @Override
     @Transactional
     public void deleteRule(Long id) {
-        PromotionRule rule = getRuleById(id);
+        RuleEntity rule = getRuleById(id);
         ruleRepository.delete(rule);
     }
 
     @Override
     @Transactional
-    public PromotionRule addCondition(Long ruleId, ConditionDTO conditionDTO) {
-        PromotionRule rule = getRuleById(ruleId);
+    public RuleEntity addCondition(Long ruleId, ConditionDTO conditionDTO) {
+        RuleEntity rule = getRuleById(ruleId);
         
         Condition condition = new Condition();
-        condition.setRule(rule);
+        condition.setRule((PromotionRule) rule);
         condition.setConditionType(conditionDTO.getConditionType());
         condition.setOperator(conditionDTO.getOperator());
         condition.setValue(conditionDTO.getValue());
@@ -108,8 +105,8 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     @Transactional
-    public PromotionRule removeCondition(Long ruleId, Long conditionId) {
-        PromotionRule rule = getRuleById(ruleId);
+    public RuleEntity removeCondition(Long ruleId, Long conditionId) {
+        RuleEntity rule = getRuleById(ruleId);
         Condition condition = conditionRepository.findById(conditionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Condition not found"));
         
@@ -123,8 +120,8 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     @Transactional
-    public PromotionRule addTier(Long ruleId, TierDTO tierDTO) {
-        PromotionRule rule = getRuleById(ruleId);
+    public RuleEntity addTier(Long ruleId, TierDTO tierDTO) {
+        RuleEntity rule = getRuleById(ruleId);
         
         // Create and save the reward first
         Reward reward = new Reward();
@@ -138,7 +135,7 @@ public class RuleServiceImpl implements RuleService {
         
         // Create and save the tier
         Tier tier = new Tier();
-        tier.setRule(rule);
+        tier.setRule((PromotionRule) rule);
         tier.setMinimumThreshold(tierDTO.getMinimumThreshold());
         tier.setReward(reward);
         
@@ -148,8 +145,8 @@ public class RuleServiceImpl implements RuleService {
 
     @Override
     @Transactional
-    public PromotionRule removeTier(Long ruleId, Long tierId) {
-        PromotionRule rule = getRuleById(ruleId);
+    public RuleEntity removeTier(Long ruleId, Long tierId) {
+        RuleEntity rule = getRuleById(ruleId);
         Tier tier = tierRepository.findById(tierId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tier not found"));
         
