@@ -1,0 +1,523 @@
+{
+  "info": {
+    "_postman_id": "c1a2b3c4-d5e6-f7a8-b9c0-d1e2f3a4b5c6",
+    "name": "Bimo Promo Engine - Test Suite",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Promotion Creation",
+      "item": [
+        {
+          "name": "Create LOGI FOOD Price List",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Price List - LOGI FOOD\",\n    \"priority\": 100,\n    \"exclusive\": true,\n    \"active\": true,\n    \"startDate\": \"{{$isoTimestamp}}\",\n    \"endDate\": \"{{$isoTimestamp}}\",\n    \"rules\": [\n        {\n            \"type\": \"CUSTOMER_ATTRIBUTE\",\n            \"parameters\": \"{\\\"attribute\\\": \\\"customerId\\\", \\\"value\\\": \\\"LOGI FOOD\\\"}\"\n        }\n    ],\n    \"actions\": [\n        {\n            \"type\": \"SET_PRICE\",\n            \"parameters\": \"{\\\"productId\\\": \\\"BURV1KG\\\", \\\"newPrice\\\": 45.00}\"\n        },\n        {\n            \"type\": \"SET_PRICE\",\n            \"parameters\": \"{\\\"productId\\\": \\\"PSUR0200008\\\", \\\"newPrice\\\": 45.00}\"\n        },\n        {\n            \"type\": \"SET_PRICE\",\n            \"parameters\": \"{\\\"productId\\\": \\\"PSUR0200125\\\", \\\"newPrice\\\": 53.00}\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Promotion has correct name and priority\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql(\"Price List - LOGI FOOD\");",
+                  "    pm.expect(jsonData.priority).to.eql(100);",
+                  "});",
+                  "",
+                  "pm.test(\"Has correct number of price override actions\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.actions.length).to.eql(3);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Tiered Discount 2000DH",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Tiered Discount 2000DH\",\n    \"priority\": 10,\n    \"exclusive\": true,\n    \"active\": true,\n    \"startDate\": \"{{$isoTimestamp}}\",\n    \"endDate\": \"{{$isoTimestamp}}\",\n    \"rules\": [\n        {\n            \"type\": \"TOTAL_AMOUNT\",\n            \"parameters\": \"{\\\"minAmount\\\": 2000}\"\n        }\n    ],\n    \"actions\": [\n        {\n            \"type\": \"PERCENTAGE_DISCOUNT\",\n            \"parameters\": \"{\\\"percentage\\\": 10.0}\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions"]
+            }
+          }
+        },
+        {
+          "name": "Create Tiered Discount 1000DH",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Tiered Discount 1000DH\",\n    \"priority\": 9,\n    \"exclusive\": true,\n    \"active\": true,\n    \"startDate\": \"{{$isoTimestamp}}\",\n    \"endDate\": \"{{$isoTimestamp}}\",\n    \"rules\": [\n        {\n            \"type\": \"TOTAL_AMOUNT\",\n            \"parameters\": \"{\\\"minAmount\\\": 1000}\"\n        }\n    ],\n    \"actions\": [\n        {\n            \"type\": \"PERCENTAGE_DISCOUNT\",\n            \"parameters\": \"{\\\"percentage\\\": 5.0}\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions"]
+            }
+          }
+        },
+        {
+          "name": "Create Poulet Pané Promotion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Promo Poulet Pané 750DH\",\n    \"priority\": 20,\n    \"exclusive\": true,\n    \"active\": true,\n    \"startDate\": \"{{$isoTimestamp}}\",\n    \"endDate\": \"{{$isoTimestamp}}\",\n    \"description\": \"AND\",\n    \"rules\": [\n        {\n            \"type\": \"CATEGORY_AMOUNT\",\n            \"parameters\": \"{\\\"category\\\": \\\"POULET_PANNE\\\", \\\"minAmount\\\": 750}\"\n        },\n        {\n            \"type\": \"CATEGORY_QUANTITY\",\n            \"parameters\": \"{\\\"category\\\": \\\"PR2SENCE_BL\\\", \\\"minQuantity\\\": 2}\"\n        }\n    ],\n    \"actions\": [\n        {\n            \"type\": \"PERCENTAGE_DISCOUNT\",\n            \"parameters\": \"{\\\"percentage\\\": 6.0}\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions"]
+            }
+          }
+        },
+        {
+          "name": "Create Mix & Match Promotion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Mix & Match - 3 Different Pops\",\n    \"priority\": 15,\n    \"exclusive\": false,\n    \"active\": true,\n    \"startDate\": \"{{$isoTimestamp}}\",\n    \"endDate\": \"{{$isoTimestamp}}\",\n    \"rules\": [\n        {\n            \"type\": \"BASKET_COMPOSITION\",\n            \"parameters\": \"{\\\"category\\\": \\\"Pops\\\", \\\"distinctProducts\\\": 3}\"\n        }\n    ],\n    \"actions\": [\n        {\n            \"type\": \"PERCENTAGE_DISCOUNT\",\n            \"parameters\": \"{\\\"percentage\\\": 20.0, \\\"scope\\\": \\\"category\\\", \\\"value\\\": \\\"Pops\\\"}\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions"]
+            }
+          }
+        },
+        {
+          "name": "Create VIP Special Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"VIP 5000DH Special - Discount + Free Gift\",\n    \"priority\": 50,\n    \"exclusive\": true,\n    \"active\": true,\n    \"startDate\": \"{{$isoTimestamp}}\",\n    \"endDate\": \"{{$isoTimestamp}}\",\n    \"description\": \"AND\",\n    \"rules\": [\n        {\n            \"type\": \"CUSTOMER_ATTRIBUTE\",\n            \"parameters\": \"{\\\"attribute\\\": \\\"categorieClient\\\", \\\"value\\\": \\\"VIP\\\"}\"\n        },\n        {\n            \"type\": \"TOTAL_AMOUNT\",\n            \"parameters\": \"{\\\"minAmount\\\": 5000}\"\n        }\n    ],\n    \"actions\": [\n        {\n            \"type\": \"PERCENTAGE_DISCOUNT\",\n            \"parameters\": \"{\\\"percentage\\\": 10.0}\"\n        },\n        {\n            \"type\": \"ADD_PRODUCT_FREE\",\n            \"parameters\": \"{\\\"productId\\\": \\\"BIMO_EXTRA\\\", \\\"quantity\\\": 1}\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Level 1: Price List & Customer Rules",
+      "item": [
+        {
+          "name": "Apply LOGI FOOD Price List",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart\": {\n        \"items\": [\n            {\n                \"productId\": \"BURV1KG\",\n                \"quantity\": 2,\n                \"price\": 60.00\n            },\n            {\n                \"productId\": \"PSUR0200125\",\n                \"quantity\": 1,\n                \"price\": 70.00\n            }\n        ]\n    },\n    \"context\": {\n        \"customerId\": \"LOGI FOOD\",\n        \"customerAttributes\": {\n            \"customerId\": \"LOGI FOOD\"\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "apply"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Price for BURV1KG should be overridden to 45.00\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var item = jsonData.finalCart.items.find(i => i.productId === 'BURV1KG');",
+                  "    pm.expect(item.price).to.eql(45.00);",
+                  "});",
+                  "",
+                  "pm.test(\"Final total should be correct (2*45 + 1*53)\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.finalTotal).to.eql(143.00);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Non-LOGI FOOD Customer (No Price Override)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart\": {\n        \"items\": [\n            {\n                \"productId\": \"BURV1KG\",\n                \"quantity\": 2,\n                \"price\": 60.00\n            }\n        ]\n    },\n    \"context\": {\n        \"customerId\": \"REGULAR-CUSTOMER\",\n        \"customerAttributes\": {}\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "apply"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Prices should remain unchanged\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var item = jsonData.finalCart.items.find(i => i.productId === 'BURV1KG');",
+                  "    pm.expect(item.price).to.eql(60.00);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Level 2: Tiered & Priority Promotions",
+      "item": [
+        {
+          "name": "Test Tiered Discount - 2000DH (10%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart\": {\n        \"items\": [\n            {\n                \"productId\": \"P1\",\n                \"quantity\": 1,\n                \"price\": 2500.00\n            }\n        ]\n    },\n    \"context\": {\n        \"customerId\": \"CUST-ANY\",\n        \"customerAttributes\": {}\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "apply"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Should apply 10% discount\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.finalTotal).to.eql(2250.00);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Tiered Discount - 1000DH (5%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart\": {\n        \"items\": [\n            {\n                \"productId\": \"P1\",\n                \"quantity\": 1,\n                \"price\": 1500.00\n            }\n        ]\n    },\n    \"context\": {\n        \"customerId\": \"CUST-ANY\",\n        \"customerAttributes\": {}\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "apply"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Should apply 5% discount\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.finalTotal).to.eql(1425.00);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Level 3: Advanced Conditional Promotions",
+      "item": [
+        {
+          "name": "Test Poulet Pané Promotion (Complete Conditions)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart\": {\n        \"items\": [\n            {\n                \"productId\": \"PP01\",\n                \"quantity\": 10,\n                \"price\": 75.0,\n                \"attributes\": {\"category\": \"POULET_PANNE\"}\n            },\n            {\n                \"productId\": \"PRB01\",\n                \"quantity\": 2,\n                \"price\": 10.0,\n                \"attributes\": {\"category\": \"PR2SENCE_BL\"}\n            }\n        ]\n    },\n    \"context\": {\n        \"customerId\": \"CUST-ANY\",\n        \"customerAttributes\": {}\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "apply"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Should apply 6% discount\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.finalTotal).to.be.closeTo(723.8, 0.01);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Mix & Match Promotion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart\": {\n        \"items\": [\n            {\n                \"productId\": \"POP1\",\n                \"quantity\": 1,\n                \"price\": 30.0,\n                \"attributes\": {\"category\": \"Pops\"}\n            },\n            {\n                \"productId\": \"POP2\",\n                \"quantity\": 1,\n                \"price\": 30.0,\n                \"attributes\": {\"category\": \"Pops\"}\n            },\n            {\n                \"productId\": \"POP3\",\n                \"quantity\": 1,\n                \"price\": 30.0,\n                \"attributes\": {\"category\": \"Pops\"}\n            }\n        ]\n    },\n    \"context\": {\n        \"customerId\": \"CUST-ANY\",\n        \"customerAttributes\": {}\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "apply"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Should apply 20% discount on Pops category\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.finalTotal).to.eql(72.00);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Level 4: Complex Scenarios & Multiple Actions",
+      "item": [
+        {
+          "name": "Test VIP Special Offer (Discount + Free Gift)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart\": {\n        \"items\": [\n            {\n                \"productId\": \"P-LUXURY\",\n                \"quantity\": 1,\n                \"price\": 5100.00\n            }\n        ]\n    },\n    \"context\": {\n        \"customerId\": \"CUST-VIP1\",\n        \"customerAttributes\": {\n            \"categorieClient\": \"VIP\"\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "apply"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Should apply 10% discount\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.finalTotal).to.eql(4590.00);",
+                  "});",
+                  "",
+                  "pm.test(\"Should add free gift\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.addedItems).to.be.an('array').that.is.not.empty;",
+                  "    var freeGift = jsonData.addedItems.find(i => i.productId === 'BIMO_EXTRA');",
+                  "    pm.expect(freeGift).to.exist;",
+                  "    pm.expect(freeGift.quantity).to.eql(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Non-VIP Customer (No Special Offer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cart\": {\n        \"items\": [\n            {\n                \"productId\": \"P-LUXURY\",\n                \"quantity\": 1,\n                \"price\": 5100.00\n            }\n        ]\n    },\n    \"context\": {\n        \"customerId\": \"CUST-REGULAR\",\n        \"customerAttributes\": {\n            \"categorieClient\": \"REGULAR\"\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "apply"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Should not apply VIP discount\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.finalTotal).to.eql(5100.00);",
+                  "});",
+                  "",
+                  "pm.test(\"Should not add free gift\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.addedItems || []).to.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+} 
