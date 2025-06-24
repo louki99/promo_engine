@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "promotions")
@@ -40,7 +41,7 @@ public class PromotionEntity extends Promotion {
     @Column(nullable = false)
     private int priority;
 
-    @Column(nullable = false)
+    @Column(name = "is_exclusive")
     private boolean exclusive;
 
     @Column(name = "stacking_group")
@@ -56,10 +57,10 @@ public class PromotionEntity extends Promotion {
     private Integer maxStackPerOrder;
 
     @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<RuleEntity> rules;
+    private Set<RuleEntity> rules = new HashSet<>();
 
     @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ActionEntity> actions;
+    private Set<ActionEntity> actions = new HashSet<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

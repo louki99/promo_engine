@@ -49,79 +49,46 @@ public class PromotionEngineService {
         
         BigDecimal totalDiscount = BigDecimal.ZERO;
         
-        // Separate exclusive and stackable promotions
-        List<PromotionEntity> exclusivePromos = activePromotions.stream()
-            .filter(PromotionEntity::isExclusive)
-            .collect(Collectors.toList());
+        // First, try to apply exclusive promotions
+        for (PromotionEntity promotion : activePromotions) {
+            if (!promotion.isExclusive()) {
+                continue;
+            }
             
-        if (!exclusivePromos.isEmpty()) {
-            // Apply only the highest priority exclusive promotion
-            PromotionEntity best = exclusivePromos.get(0); // already sorted
-            if (isPromotionApplicable(best, request)) {
-                ApplyPromotionResult result = applyPromotion(best, request, response);
+            if (isPromotionApplicable(promotion, request)) {
+                ApplyPromotionResult result = applyPromotion(promotion, request, response);
                 if (result.isApplied()) {
                     totalDiscount = totalDiscount.add(result.getDiscountAmount());
-                    recordPromotionUsage(best, request.getCustomerId());
-                    AppliedPromotion appliedPromo = new AppliedPromotion();
-                    appliedPromo.setPromoCode(best.getPromoCode());
-                    appliedPromo.setDescription(best.getDescription());
-                    response.getAppliedPromotions().add(appliedPromo);
-                }
-            }
-        } else {
-            // Stackable logic: group by stackingGroup, apply with limits
-            Map<String, List<PromotionEntity>> byGroup = activePromotions.stream()
-                .filter(p -> !p.isExclusive())
-                .collect(Collectors.groupingBy(PromotionEntity::getStackingGroup, Collectors.toList()));
-                
-            // Track usage for limits
-            Map<String, Integer> groupUsageCount = new HashMap<>();
-            Map<Long, Integer> customerPromoUsage = new HashMap<>();
-            int orderPromoCount = 0;
-            
-            for (List<PromotionEntity> groupPromos : byGroup.values()) {
-                String group = groupPromos.get(0).getStackingGroup();
-                int groupCount = 0;
-                
-                for (PromotionEntity promo : groupPromos) {
-                    // Check stacking limits
-                    if (promo.getMaxStackCount() != null && groupCount >= promo.getMaxStackCount()) {
-                        continue;
-                    }
-                    
-                    if (promo.getMaxStackPerCustomer() != null) {
-                        int customerUsage = customerPromoUsage.getOrDefault(promo.getId(), 0);
-                        if (customerUsage >= promo.getMaxStackPerCustomer()) {
-                            continue;
-                        }
-                    }
-                    
-                    if (promo.getMaxStackPerOrder() != null && orderPromoCount >= promo.getMaxStackPerOrder()) {
-                        continue;
-                    }
-                    
-                    if (isPromotionApplicable(promo, request)) {
-                        ApplyPromotionResult result = applyPromotion(promo, request, response);
-                        if (result.isApplied()) {
-                            totalDiscount = totalDiscount.add(result.getDiscountAmount());
-                            recordPromotionUsage(promo, request.getCustomerId());
-                            AppliedPromotion appliedPromo = new AppliedPromotion();
-                            appliedPromo.setPromoCode(promo.getPromoCode());
-                            appliedPromo.setDescription(promo.getDescription());
-                            response.getAppliedPromotions().add(appliedPromo);
-                            
-                            // Update usage counts
-                            groupCount++;
-                            groupUsageCount.merge(group, 1, Integer::sum);
-                            customerPromoUsage.merge(promo.getId(), 1, Integer::sum);
-                            orderPromoCount++;
-                        }
-                    }
+                    recordPromotionUsage(promotion, request.getCustomerId());
+                    addAppliedPromotion(response, promotion, result.getDiscountAmount());
+                    // Stop processing - exclusive promotion applied
+                    response.setFinalTotal(originalTotal.subtract(totalDiscount));
+                    return response;
                 }
             }
         }
         
-        // Calculate final totals
+        // If no exclusive promotion was applied, process non-exclusive promotions
+        for (PromotionEntity promotion : activePromotions) {
+            if (promotion.isExclusive()) {
+                continue;
+            }
+            
+            // Apply stacking rules
+            if (!canStackPromotion(promotion, response.getAppliedPromotions())) {
+                continue;
+            }
+            
+            if (isPromotionApplicable(promotion, request)) {
+                ApplyPromotionResult result = applyPromotion(promotion, request, response);
+                if (result.isApplied()) {
+                    totalDiscount = totalDiscount.add(result.getDiscountAmount());
+                    recordPromotionUsage(promotion, request.getCustomerId());
+                    addAppliedPromotion(response, promotion, result.getDiscountAmount());
+                }
+            }
+        }
+        
         response.setDiscountTotal(totalDiscount);
         response.setFinalTotal(originalTotal.subtract(totalDiscount));
         
@@ -224,6 +191,35 @@ public class PromotionEngineService {
         dto.setName(promotion.getName());
         dto.setDescription(promotion.getDescription());
         return dto;
+    }
+    
+    private boolean canStackPromotion(PromotionEntity promotion, List<AppliedPromotion> appliedPromotions) {
+        // Check if we've reached the maximum stack count for this promotion's group
+        long groupCount = appliedPromotions.stream()
+            .filter(ap -> ap.getStackingGroup().equals(promotion.getStackingGroup()))
+            .count();
+            
+        if (promotion.getMaxStackCount() != null && groupCount >= promotion.getMaxStackCount()) {
+            return false;
+        }
+        
+        // Check if we've reached the maximum promotions per order
+        if (promotion.getMaxStackPerOrder() != null && appliedPromotions.size() >= promotion.getMaxStackPerOrder()) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private void addAppliedPromotion(ApplyPromotionResponse response, PromotionEntity promotion, BigDecimal discountAmount) {
+        AppliedPromotion appliedPromo = new AppliedPromotion();
+        appliedPromo.setPromotionId(promotion.getId());
+        appliedPromo.setPromoCode(promotion.getPromoCode());
+        appliedPromo.setName(promotion.getName());
+        appliedPromo.setDescription(promotion.getDescription());
+        appliedPromo.setDiscountAmount(discountAmount);
+        appliedPromo.setStackingGroup(promotion.getStackingGroup());
+        response.getAppliedPromotions().add(appliedPromo);
     }
     
     // Inner class for apply promotion result
