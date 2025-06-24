@@ -34,19 +34,22 @@ public class RuleFactory {
     }
 
     private BasketCompositionRule createBasketCompositionRule(Map<String, Object> parameters) {
-        int distinctProducts = ((Number) parameters.get("distinctProducts")).intValue();
-        return new BasketCompositionRule(distinctProducts);
+        String category = (String) parameters.get("category");
+        int minDistinctProducts = ((Number) parameters.get("minDistinctProducts")).intValue();
+        int minQuantityPerProduct = ((Number) parameters.getOrDefault("minQuantityPerProduct", 1)).intValue();
+        return new BasketCompositionRule(category, minDistinctProducts, minQuantityPerProduct);
     }
 
     private ProductQuantityRule createProductQuantityRule(Map<String, Object> parameters) {
         String productId = (String) parameters.get("productId");
         String category = (String) parameters.get("category");
         int minQuantity = ((Number) parameters.get("minQuantity")).intValue();
+        int maxQuantity = ((Number) parameters.getOrDefault("maxQuantity", Integer.MAX_VALUE)).intValue();
         
         if (productId != null) {
-            return new ProductQuantityRule(productId, minQuantity);
+            return new ProductQuantityRule(productId, null, minQuantity, maxQuantity);
         } else {
-            return new ProductQuantityRule(category, minQuantity);
+            return new ProductQuantityRule(null, category, minQuantity, maxQuantity);
         }
     }
 
