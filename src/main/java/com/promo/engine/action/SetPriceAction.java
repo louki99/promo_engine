@@ -13,12 +13,12 @@ public class SetPriceAction implements Action {
     private final BigDecimal minPrice;
     private final BigDecimal maxPrice;
 
-    public SetPriceAction(String productId, BigDecimal newPrice) {
-        this(productId, null, newPrice, null, null);
-    }
-
-    public SetPriceAction(String category, BigDecimal newPrice, boolean isCategory) {
-        this(null, category, newPrice, null, null);
+    public SetPriceAction(String productId, String category, double newPrice, Double minPrice, Double maxPrice) {
+        this.productId = productId;
+        this.category = category;
+        this.newPrice = BigDecimal.valueOf(newPrice);
+        this.minPrice = minPrice != null ? BigDecimal.valueOf(minPrice) : null;
+        this.maxPrice = maxPrice != null ? BigDecimal.valueOf(maxPrice) : null;
     }
 
     @Override

@@ -6,6 +6,8 @@ import com.promo.engine.rule.Rule;
 import com.promo.engine.rule.BasketCompositionRule;
 import com.promo.engine.rule.ProductQuantityRule;
 import com.promo.engine.rule.BasketValueRule;
+import com.promo.engine.validation.ParameterSchemaValidator;
+import com.promo.engine.validation.SchemaRegistry;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -13,13 +15,21 @@ import java.util.Map;
 @Component
 public class RuleFactory {
     private final ObjectMapper objectMapper;
+    private final ParameterSchemaValidator validator;
+    private final SchemaRegistry schemaRegistry;
 
-    public RuleFactory(ObjectMapper objectMapper) {
+    public RuleFactory(ObjectMapper objectMapper, ParameterSchemaValidator validator, SchemaRegistry schemaRegistry) {
         this.objectMapper = objectMapper;
+        this.validator = validator;
+        this.schemaRegistry = schemaRegistry;
     }
 
     public Rule createRule(RuleEntity entity) {
         try {
+            // Validate parameters against schema
+            validator.validateParameters(entity.getType(), entity.getParameters(), schemaRegistry.getRuleSchema(entity.getType()));
+            
+            // Parse parameters
             Map<String, Object> parameters = objectMapper.readValue(entity.getParameters(), Map.class);
             
             return switch (entity.getType()) {
